@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}@{{ profile_user.username }} · Connectly{% endblock %}
+{% block content %}
+<section class="profile-card card">
+  <div class="profile-avatar">{% if profile.photo %}<img src="{{ profile.photo.url }}" alt="Profile photo">{% else %}{{ profile_user.username|first|upper }}{% endif %}</div>
+  <div class="profile-info">
+    <h1>@{{ profile_user.username }}</h1>
+    <p>{{ profile.bio|default:"No bio added yet." }}</p>
+    <div class="stats"><span><strong>{{ posts.count }}</strong> posts</span><span><strong>{{ followers_count }}</strong> followers</span><span><strong>{{ following_count }}</strong> following</span></div>
+    {% if profile_user != user %}
+    <form method="post" action="{% url 'toggle_follow' profile_user.username %}">{% csrf_token %}<button class="primary" type="submit">{% if is_following %}Unfollow{% else %}Follow{% endif %}</button></form>
+    {% endif %}
+  </div>
+</section>
+
+{% if profile_user == user %}
+<section class="card edit-profile">
+  <h2>Edit profile</h2>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    {{ form.as_p }}
+    <button class="primary" type="submit">Save profile</button>
+  </form>
+</section>
+{% endif %}
+
+<h2 class="section-title">Posts</h2>
+{% for post in posts %}
+<article class="post card">
+  <div class="muted small">{{ post.created_at|date:"M d, Y · H:i" }}</div>
+  <p>{{ post.caption|linebreaksbr }}</p>
+  {% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="Post image">{% endif %}
+  <p class="muted small">{{ post.likes.count }} likes · {{ post.comments.count }} comments</p>
+</article>
+{% empty %}<div class="empty card">No posts to show.</div>{% endfor %}
+{% endblock %}

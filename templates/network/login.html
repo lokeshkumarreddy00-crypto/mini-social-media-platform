@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Login · Connectly{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <h1>Welcome back</h1>
+  <p class="muted">Log in to continue to Connectly.</p>
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button class="primary full" type="submit">Login</button>
+  </form>
+  <p>New here? <a href="{% url 'signup' %}">Create an account</a></p>
+</section>
+{% endblock %}

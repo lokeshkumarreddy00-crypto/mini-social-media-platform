@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Home · Connectly{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Your feed</h1><p class="muted">See what's happening in your community.</p></div></div>
+<section class="composer card">
+  <h2>Create a post</h2>
+  <form method="post" action="{% url 'create_post' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ post_form.caption }}
+    <div class="composer-bottom">{{ post_form.image }}<button class="primary" type="submit">Publish</button></div>
+  </form>
+</section>
+
+{% for post in posts %}
+<article class="post card">
+  <div class="post-header">
+    <div class="avatar">{{ post.author.username|first|upper }}</div>
+    <div><a class="username" href="{% url 'profile' post.author.username %}">@{{ post.author.username }}</a><div class="muted small">{{ post.created_at|date:"M d, Y · H:i" }}</div></div>
+    {% if post.author == user %}
+    <form method="post" action="{% url 'delete_post' post.id %}" class="push">{% csrf_token %}<button class="text-button danger" type="submit" data-confirm="Delete this post?">Delete</button></form>
+    {% endif %}
+  </div>
+  <p class="post-caption">{{ post.caption|linebreaksbr }}</p>
+  {% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="Post image">{% endif %}
+  <div class="post-actions">
+    <form method="post" action="{% url 'toggle_like' post.id %}">{% csrf_token %}<input type="hidden" name="next" value="feed"><button class="like-button {% if post.id in liked_ids %}liked{% endif %}" type="submit">{% if post.id in liked_ids %}♥ Liked{% else %}♡ Like{% endif %}</button></form>
+    <span class="muted">{{ post.likes.count }} likes · {{ post.comments.count }} comments</span>
+  </div>
+  <div class="comments">
+    {% for comment in post.comments.all %}
+      <p><a href="{% url 'profile' comment.author.username %}"><strong>@{{ comment.author.username }}</strong></a> {{ comment.text }}</p>
+    {% empty %}<p class="muted small">No comments yet. Start the conversation.</p>{% endfor %}
+    <form class="comment-form" method="post" action="{% url 'add_comment' post.id %}">{% csrf_token %}<input name="text" maxlength="500" placeholder="Write a comment..." required><button type="submit">Send</button></form>
+  </div>
+</article>
+{% empty %}
+<div class="empty card"><h2>No posts yet</h2><p>Be the first to share something with the community.</p></div>
+{% endfor %}
+{% endblock %}
